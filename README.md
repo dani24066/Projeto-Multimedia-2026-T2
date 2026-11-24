@@ -10,13 +10,23 @@ Link da Aplicação Web: Link do GitHub Pages ou Streamlit Cloud
 
 1. Visão Geral do Projeto
 
-Descrição: Explica em 2 a 3 frases o objetivo do teu Dashboard / Web App
-Proposta Escolhida: Proposta 1 ou Proposta 2.
+Descrição: O Meu Dashboard Apresenta 3 widgets. 2 têm funcionalidades adaptadas a alunos de Design, e o 3º é um jogo de sudoku.
+Proposta Escolhida: Proposta 1 (Com alteração no 3º widget)
 
 2. Estrutura do Código e Funcionalidades Integradas
 
-Explica se foram adaptados os exercícios das fichas ou se forma utilizados novos
-exercícios com IA.
+O primeiro widget (Nuvem de Palavras-Laboratório de Design) foi construido a partir do código da nuvem de palavras ensinado da aula. 
+Este widget inclui, para além das funcionalidades costruidas em aula, funcionalidades de paleta de cor, organisão de composição, verificação de contraste, 
+um sujestor de sinónimos às palavras intrudozidas. e uma Ficha do Sistema do desgin que demonstra os conceitos de: Grelha; Tipografia; Cor; Acessibilidade e Princípios
+
+O segundo widget (Ferramentas de Ecrã e Cor – Laboratório de Design) foi construído a partir do código de classificação de resolução em Python ensinado em aula. 
+Este widget inclui, para além das funcionalidades da base (categorias de resolução de SD a 8K, cálculo de proporções e seletor de paletas em hexadecimal), um verificador de contraste WCAG com correção automática da 
+cor, uma simulação de daltonismo, escalas de tons com valores CMYK, um conversor de unidades, uma escala tipográfica modular, uma calculadora de papel e impressão com sangria, uma grelha de colunas e a proporção 
+áurea. Cada separador inclui ainda Notas de Design que explicam os conceitos de Resolução, Proporção, Cor, Tipografia, Impressão, Grelha e Acessibilidade, para que o estudante perceba o princípio por trás de cada 
+ferramenta.
+
+O terceiro widget ( Sudoku- Um jogo calmo) dispõe a partir de código gerado pela IA, do jogo base do sudoku assim como instruções de como jogar, uma paleta de cores versátil a paletas Claras e Pasteis e paletas Escuras e Suaves. Dispõe ainda de a acessibilidade de escolha de idoma entre o Português, o Espanhol, e o Inglês
+
 
 3. Registo de Utilização da IA
 
