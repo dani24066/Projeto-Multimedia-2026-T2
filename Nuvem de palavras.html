@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nuvem de palavras</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
+<style>
+:root{--bg:#f4f2ec;--pn:#fffdf8;--tx:#141414;--mu:#5c5b55;--ac:#d63a1f;--on:#fff;--rule:#141414;--bd:#cfcbbd;--ch:#ebe8df;--ok:#1f7a3d;--sh:6px 6px 0 rgba(20,20,20,.12);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141412;--pn:#1c1c19;--tx:#efede6;--mu:#a3a198;--ac:#ff7a5c;--on:#1a0d09;--rule:#efede6;--bd:#3a3935;--ch:#262522;--ok:#5fd08a;--sh:none;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141412;--pn:#1c1c19;--tx:#efede6;--mu:#a3a198;--ac:#ff7a5c;--on:#1a0d09;--rule:#efede6;--bd:#3a3935;--ch:#262522;--ok:#5fd08a;--sh:none;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:1rem/1.6 Inter,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.mono,.kick,.n,label b,.note b,figcaption .mono,.badge,.swc b,.swc small,summary{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+.top{display:grid;grid-template-columns:7fr 5fr;gap:32px;align-items:end;max-width:1240px;margin:0 auto;padding:40px 24px 24px;border-bottom:2px solid var(--rule)}
+.kick{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin:0 0 16px;color:var(--mu)}
+h1{font:700 clamp(2.6rem,7vw,4.6rem)/.92 "Space Grotesk",Helvetica,Arial,sans-serif;letter-spacing:-.035em;margin:0}
+h1 span{color:var(--ac)}
+.lead{font-size:1.25rem;line-height:1.5;margin:0;max-width:34ch}
+.app{display:grid;grid-template-columns:372px minmax(0,1fr);gap:40px;max-width:1240px;margin:0 auto;padding:24px}
+@media(max-width:900px){.top,.app{grid-template-columns:1fr}.top{gap:16px}}
+h2,h3{font-family:"Space Grotesk",Helvetica,Arial,sans-serif}
+h2{font-size:1.25rem;margin:0;letter-spacing:-.01em}
+h3{font-size:1.25rem;margin:0 0 8px;letter-spacing:-.01em}
+.sec{border-top:2px solid var(--rule);padding:16px 0 24px}
+.sec>header{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+.n{font-size:.8rem;color:var(--ac);font-weight:600}
+label{display:block;font-weight:600;font-size:.875rem;margin:16px 0 8px}
+label.row{display:flex;gap:8px;align-items:center;font-weight:400;margin:16px 0 0}
+label b{float:right;font-weight:500;font-size:.8rem;color:var(--mu)}
+textarea,input[type=text],input:not([type]),select{width:100%;font:inherit;color:var(--tx);background:var(--pn);border:1px solid var(--tx);border-radius:2px;padding:8px 12px;min-height:44px}
+textarea{min-height:120px;resize:vertical}
+input[type=file]{width:100%;font:inherit;font-size:.875rem}
+input[type=range]{width:100%;accent-color:var(--ac);min-height:24px}
+input[type=checkbox]{accent-color:var(--ac);width:20px;height:20px}
+input[type=color]{width:100%;height:44px;border:1px solid var(--tx);border-radius:2px;background:var(--pn);padding:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.note{margin:16px 0 0;padding:8px 12px;border-left:4px solid var(--ac);background:var(--ch);font-size:.875rem;line-height:1.5}
+.note b{display:block;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:2px}
+button{font:inherit;cursor:pointer;color:var(--tx)}
+.go{width:100%;min-height:52px;margin-top:8px;background:var(--ac);color:var(--on);border:2px solid var(--rule);border-radius:2px;font:600 .9rem "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase;box-shadow:var(--sh);transition:transform .12s}
+.go:hover{transform:translate(-2px,-2px)}.go:active{transform:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.chip{min-height:36px;background:var(--pn);border:1px solid var(--tx);border-radius:2px;padding:4px 12px}
+.chip:hover,.chip.on{background:var(--tx);color:var(--bg)}
+.chip small{opacity:.7;margin-left:6px;font-family:"IBM Plex Mono",monospace}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.stage{display:flex;flex-direction:column;gap:24px;min-width:0}
+.poster{margin:0}
+canvas{width:100%;height:auto;display:block;border:2px solid var(--rule);box-shadow:var(--sh)}
+figcaption{margin-top:12px;font-size:.875rem;color:var(--mu)}
+figcaption .mono{color:var(--tx);font-weight:600;margin-right:8px}
+.card{background:var(--pn);border:1px solid var(--tx);border-radius:2px;padding:24px}
+.mu{color:var(--mu);margin:0}
+.sub2{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px}
+.sw{display:flex;flex-wrap:wrap;gap:16px;margin:8px 0 16px}
+.swc{width:92px}
+.swc i{display:grid;place-items:center;height:56px;font:700 1.5rem "Space Grotesk",sans-serif;font-style:normal;border:1px solid var(--tx)}
+.swc b{display:block;font-size:.72rem;font-weight:500;margin-top:4px}
+.swc small{font-size:.72rem;color:var(--mu)}
+.badge{display:inline-block;font-size:.78rem;font-weight:600;padding:2px 8px;border:2px solid;margin-right:8px}
+.badge.ok{color:var(--ok)}.badge.no{color:var(--ac)}
+details.card summary{cursor:pointer;font-weight:600;font-size:.9rem;min-height:24px}
+details.card dl{display:grid;grid-template-columns:120px 1fr;gap:8px 16px;margin:16px 0 0;font-size:.9rem}
+details.card dt{font:600 .75rem "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--mu)}details.card dd{margin:0}
+@media(prefers-reduced-motion:reduce){.go{transition:none}}
+</style>
+</head>
+<body>
+<header class="top"><div><p class="kick">Oficina de Multimédia · Laboratório de design</p><h1>Nuvem de <span>palavras</span></h1></div>
+<p class="lead">Transforma texto em composição visual e aprende, em cada controlo, o princípio de design que lhe está por trás.</p></header>
+<main class="app">
+<aside>
+  <section class="sec"><header><span class="n">01</span><h2>Conteúdo</h2></header>
+    <label for="txt">Texto de origem</label>
+    <textarea id="txt">Estar em toda a parte onde houver bem a fazer e sofrimento a aliviar</textarea>
+    <label for="file">Ou carrega um ficheiro .txt</label>
+    <input type="file" id="file" accept=".txt,text/plain">
+    <p class="note"><b>Nota de design</b>O conteúdo vem primeiro: a forma serve o texto, nunca o contrário.</p></section>
+  <section class="sec"><header><span class="n">02</span><h2>Filtro</h2></header>
+    <label for="stop">Palavras a remover (separadas por vírgulas)</label>
+    <input id="stop" value="em,a,e">
+    <label class="row"><input type="checkbox" id="ptstop" checked> Remover palavras comuns em português</label>
+    <label for="minl">Mínimo de letras <b id="minlv"></b></label>
+    <input type="range" id="minl" min="0" max="8" value="0">
+    <p class="note"><b>Nota de design</b>Remover ruído aumenta o sinal: o olhar encontra mais depressa o essencial.</p></section>
+  <section class="sec"><header><span class="n">03</span><h2>Hierarquia</h2></header>
+    <label for="maxw">Máximo de palavras <b id="maxwv"></b></label>
+    <input type="range" id="maxw" min="3" max="150" value="50">
+    <label for="maxf">Tamanho máximo da letra <b id="maxfv"></b></label>
+    <input type="range" id="maxf" min="40" max="300" value="200">
+    <p class="note"><b>Nota de design</b>Poucas palavras grandes criam contraste de escala; demasiadas diluem a hierarquia. O tamanho comunica a frequência.</p></section>
+  <section class="sec"><header><span class="n">04</span><h2>Cor</h2></header>
+    <label for="pal">Paleta</label>
+    <select id="pal"><option>YlOrBr</option><option>Viridis</option><option>Plasma</option><option>Inferno</option><option>Greens</option><option>Blues</option><option>Reds</option><option>Purples</option><option>Tab10</option></select>
+    <div class="two"><div><label for="bg">Fundo</label><input type="color" id="bg" value="#0a873a"></div>
+    <div><label for="onec">Cor única</label><input type="color" id="onec" value="#ffd700"></div></div>
+    <label class="row"><input type="checkbox" id="one"> Usar só a cor única</label>
+    <p class="note"><b>Nota de design</b>A legibilidade nasce do contraste de valor (claro/escuro), não só do matiz. Confirma o verificador ao lado.</p></section>
+  <section class="sec"><header><span class="n">05</span><h2>Composição</h2></header>
+    <label for="shape">Forma</label>
+    <select id="shape"><option value="square">Retângulo</option><option value="circle">Círculo</option><option value="cardioid">Coração</option><option value="diamond">Losango</option><option value="star">Estrela</option><option value="triangle">Triângulo</option></select>
+    <label for="hor">Palavras na horizontal (%) <b id="horv"></b></label>
+    <input type="range" id="hor" min="0" max="100" value="90">
+    <p class="note"><b>Nota de design</b>O texto horizontal lê-se mais depressa; o vertical funciona como acento e cria ritmo.</p>
+    <button class="go" id="go">Reorganizar composição</button></section>
+</aside>
+<section class="stage">
+  <figure class="poster"><canvas id="cv" width="1200" height="600" aria-label="Nuvem de palavras"></canvas>
+  <figcaption><span class="mono">Fig. 1</span>Hierarquia por frequência: quanto maior a palavra, mais vezes aparece. Clica numa palavra para ver sinónimos. Para guardar a imagem, usa o botão direito sobre ela.</figcaption></figure>
+  <div class="card" id="cor"></div>
+  <div class="card"><h3>Palavras na nuvem</h3><div class="chips" id="chips"></div></div>
+  <div class="card" id="syn"></div>
+  <details class="card"><summary>Ficha do sistema de design</summary><dl>
+    <dt>Grelha</dt><dd>Módulos de 8 px (sistema 8-pt) e duas colunas fluidas: controlos à esquerda, resultado à direita.</dd>
+    <dt>Tipografia</dt><dd>Escala modular de 1,25 (Major Third). Space Grotesk nos títulos e na nuvem, Inter no texto, IBM Plex Mono nas anotações.</dd>
+    <dt>Cor</dt><dd>Papel #F4F2EC, tinta #141414 e um único acento vermelhão #D63A1F para guiar o olhar.</dd>
+    <dt>Acessibilidade</dt><dd>Contraste WCAG 2.2: 4,5:1 para texto normal e 3:1 para texto grande. Alvos de toque com pelo menos 44 px de altura.</dd>
+    <dt>Princípios</dt><dd>Hierarquia, contraste, alinhamento, proximidade e repetição.</dd></dl></details>
+</section>
+</main>
+<script>
+const $=i=>document.getElementById(i);
+function el(t,x,c,f){const e=document.createElement(t);if(x!=null)e.textContent=x;if(c)e.className=c;if(f)e.onclick=f;return e}
+const FONT='"Space Grotesk",Helvetica,Arial,sans-serif';
+const PT=new Set("a o as os um uma uns umas e ou mas se que de do da dos das em no na nos nas num numa por pelo pela pelos pelas para com sem sobre entre até ao aos à às como quando onde porque ser estar foi são era há ter tem tinha eu tu ele ela nós eles elas me te lhe isto isso aquilo este esta esse essa aquele aquela meu minha seu sua mais menos muito já não sim também ainda só toda todo todas todos".split(" "));
+const PAL={YlOrBr:["#fee391","#fec44f","#fe9929","#ec7014","#cc4c02","#fff7bc"],Viridis:["#440154","#3b528b","#21918c","#5ec962","#fde725"],Plasma:["#0d0887","#7e03a8","#cc4778","#f89540","#f0f921"],Inferno:["#781c6d","#bc3754","#ed6925","#fbb61a","#fcffa4"],Greens:["#c7e9c0","#a1d99b","#74c476","#41ab5d","#238b45"],Blues:["#c6dbef","#9ecae1","#6baed6","#3182bd","#08519c"],Reds:["#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d"],Purples:["#dadaeb","#bcbddc","#9e9ac8","#807dba","#6a51a3"],Tab10:["#1f77b4","#ff7f0e","#2ca02c","#d62728","#9467bd","#8c564b","#e377c2","#17becf"]};
+// Dicionário de sinónimos incorporado (formas base: singular, infinitivo)
+const D={};"bem:benefício,vantagem,bondade,proveito;mal:dano,prejuízo,maldade;sofrimento:dor,padecimento,aflição,angústia;aliviar:suavizar,atenuar,reconfortar,minorar;fazer:realizar,criar,executar,produzir;parte:porção,fração,pedaço,secção;estar:encontrar-se,permanecer,ficar;houver:existir,ocorrer;haver:existir,ter,ocorrer;casa:lar,moradia,habitação,residência;amor:afeto,carinho,paixão,ternura;vida:existência,vivência;tempo:época,período,momento,duração;pessoa:indivíduo,sujeito,ser,gente;trabalho:labor,emprego,tarefa,ocupação;mundo:universo,planeta,globo;grande:enorme,vasto,imenso,amplo;pequeno:mínimo,reduzido,diminuto;bom:ótimo,excelente,agradável,benéfico;mau:ruim,péssimo,nocivo,perverso;belo:formoso,lindo,bonito,magnífico;feliz:contente,alegre,radiante,satisfeito;triste:abatido,melancólico,desanimado;rápido:veloz,ligeiro,ágil,célere;lento:vagaroso,demorado,pausado;forte:robusto,resistente,vigoroso,poderoso;fraco:frágil,débil,delicado;ajudar:auxiliar,apoiar,socorrer,assistir;dar:oferecer,conceder,entregar,doar;ver:avistar,observar,notar;dizer:afirmar,declarar,referir;falar:conversar,dialogar,discursar;pensar:refletir,meditar,raciocinar;querer:desejar,almejar,ambicionar;amigo:companheiro,camarada,colega,aliado;caminho:estrada,trilho,via,percurso;dia:jornada,data,período;noite:escuridão,anoitecer,breu;luz:claridade,brilho,clarão,fulgor;paz:calma,serenidade,tranquilidade,harmonia;guerra:conflito,combate,batalha,luta;força:energia,vigor,potência;coragem:bravura,ousadia,valentia,destemor;esperança:expectativa,confiança,fé,otimismo;sonho:ilusão,fantasia,devaneio,aspiração;alegria:contentamento,felicidade,júbilo,prazer;dor:sofrimento,mágoa,aflição,tormento;medo:receio,temor,pavor,susto;cidade:urbe,metrópole,povoação;país:nação,pátria,estado,território;escola:colégio,instituto,liceu,academia;livro:obra,volume,publicação;palavra:vocábulo,termo,expressão;história:narrativa,conto,relato,crónica;ideia:conceito,noção,pensamento;problema:dificuldade,questão,obstáculo,entrave;solução:resolução,saída,remédio,resposta;começo:início,princípio,origem,arranque;fim:término,conclusão,desfecho,final;novo:recente,moderno,inédito,atual;velho:antigo,idoso,ultrapassado;importante:relevante,essencial,fundamental,crucial;difícil:árduo,complicado,duro,penoso;fácil:simples,acessível,descomplicado;verdade:realidade,certeza,exatidão;mentira:falsidade,engano,fraude,invenção;criar:inventar,produzir,conceber,gerar;mudar:alterar,transformar,modificar,trocar;crescer:aumentar,desenvolver-se,expandir-se;aprender:estudar,assimilar,apreender;ensinar:instruir,educar,lecionar,formar;ganhar:conquistar,obter,alcançar,receber;perder:extraviar,desperdiçar,falhar;encontrar:achar,descobrir,deparar,localizar;mostrar:exibir,revelar,apresentar,expor;usar:utilizar,empregar,aplicar;cuidar:zelar,tratar,velar,proteger;proteger:defender,resguardar,amparar,preservar;partilhar:repartir,dividir,compartilhar;comunidade:sociedade,coletividade,grupo,povo;saúde:bem-estar,vitalidade;doença:enfermidade,maleita,moléstia;família:lar,parentela,clã;criança:miúdo,menino,pequeno,infante;coração:peito,ânimo,alma,íntimo;alma:espírito,ânimo,essência".split(";").forEach(l=>{const[k,v]=l.split(":");D[k]=v.split(",")});
+const RULES=[["ões","ão"],["ães","ão"],["ãos","ão"],["ais","al"],["eis","el"],["ns","m"],["res","r"],["zes","z"],["s",""],["a","o"]];
+function syns(w){const f=[w];for(const[a,b]of RULES)if(w.endsWith(a)&&w.length>a.length+2)f.push(w.slice(0,-a.length)+b);
+  for(const x of f)if(D[x]){const r=D[x].filter(s=>s!==w);if(r.length)return r}return[]}
+
+let subs={},src={},list=[],sel=null;
+
+function words(){
+  const stop=new Set($('ptstop').checked?PT:[]);
+  $('stop').value.split(',').forEach(s=>{s=s.trim().toLowerCase();if(s)stop.add(s)});
+  const min=+$('minl').value,m=new Map();src={};
+  for(const t of $('txt').value.match(/[\p{L}\p{N}][\p{L}\p{N}']+/gu)||[]){
+    const w=t.toLowerCase();if(stop.has(w)||w.length<min)continue;
+    const k=subs[w]||w;if(!(k in src))src[k]=w;m.set(k,(m.get(k)||0)+1);
+  }
+  return[...m].sort((a,b)=>b[1]-a[1]).slice(0,+$('maxw').value);
+}
+
+function draw(){
+  design();list=words();
+  const cv=$('cv'),sc=cv.width/800,bg=$('bg').value,ctx=cv.getContext('2d');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,cv.width,cv.height);
+  chips();
+  if(!list.length){ctx.fillStyle="#fff";ctx.font="28px "+FONT;ctx.fillText("Sem palavras para mostrar",40,70);return}
+  const max=list[0][1],mf=+$('maxf').value*sc,pal=PAL[$('pal').value],one=$('one').checked,oc=$('onec').value,h=+$('hor').value/100;
+  WordCloud(cv,{list,gridSize:Math.round(7*sc),weightFactor:s=>Math.max(9*sc,Math.pow(s/max,.6)*mf),
+    fontFamily:FONT,fontWeight:'600',color:()=>one?oc:pal[Math.random()*pal.length|0],backgroundColor:bg,
+    rotateRatio:1-h,minRotation:Math.PI/2,maxRotation:Math.PI/2,rotationSteps:1,shape:$('shape').value,
+    shrinkToFit:true,click:i=>{if(i)pick(i[0])}});
+}
+
+function chips(){
+  const c=$('chips');c.replaceChildren();
+  if(!list.length)c.append(el('span','Escreve algum texto para começar.','mu'));
+  list.forEach(([w,n])=>{const b=el('button',w,'chip'+(w===sel?' on':''),()=>pick(w));b.append(el('small',n));c.append(b)});
+}
+
+function pick(w){sel=w;chips();panel()}
+function swap(o,n){if(n===o)delete subs[o];else subs[o]=n;sel=n;draw();panel()}
+
+function panel(){
+  const p=$('syn');p.replaceChildren();
+  if(!sel){p.append(el('h3','Sinónimos'),el('p','Escolhe uma palavra para ver sugestões e trocá-la na nuvem.','mu'));}
+  else{
+    const o=src[sel]||sel;
+    p.append(el('h3','Sinónimos de “'+sel+'”'));
+    const box=el('div',null,'chips'),s=syns(sel);
+    if(s.length)s.forEach(x=>box.append(el('button',x,'chip',()=>swap(o,x))));
+    else box.append(el('span','Sem sugestões no dicionário incorporado. Escreve a palavra que preferires.','mu'));
+    p.append(box);
+    const inp=el('input');inp.type='text';inp.placeholder='Escreve outra palavra e prime Enter';inp.setAttribute('aria-label','Palavra alternativa');
+    inp.onkeydown=e=>{if(e.key==='Enter'&&inp.value.trim())swap(o,inp.value.trim().toLowerCase())};
+    p.append(inp);
+  }
+  const ent=Object.entries(subs);
+  if(ent.length){
+    const r=el('div',null,'sub2');r.append(el('span','Trocas ativas:','mu'));
+    ent.forEach(([o,n])=>r.append(el('button',o+' → '+n+'  ✕','chip',()=>{delete subs[o];draw();panel()})));
+    r.append(el('button','Repor tudo',null,()=>{subs={};sel=null;draw();panel()}));
+    p.append(r);
+  }
+}
+
+let t;const later=()=>{clearTimeout(t);t=setTimeout(draw,250)};
+document.querySelector('aside').addEventListener('input',later);
+document.querySelectorAll('input[type=range]').forEach(r=>{const b=$(r.id+'v'),f=()=>b.textContent=r.value;r.addEventListener('input',f);f()});
+$('go').onclick=draw;
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('txt').value=r.result;subs={};sel=null;draw();panel()};r.readAsText(f)};
+const HARM={YlOrBr:"Análoga quente (amarelo → castanho): coerente e acolhedora.",Viridis:"Sequencial perceptual: o valor cresce de forma uniforme, ótima para daltonismo.",Plasma:"Sequencial perceptual com viragem de matiz: energia e boa leitura de ordem.",Inferno:"Sequencial perceptual de alto contraste, do escuro ao claro.",Greens:"Monocromática: um só matiz com variação de valor, máxima coesão.",Blues:"Monocromática: transmite calma e confiança.",Reds:"Monocromática: forte e urgente, usar com moderação.",Purples:"Monocromática: criativa e discreta.",Tab10:"Qualitativa: matizes distintos para categorias, mais distinção do que harmonia."};
+const lum=c=>{const v=[1,3,5].map(i=>parseInt(c.substr(i,2),16)/255).map(x=>x<=.03928?x/12.92:((x+.055)/1.055)**2.4);return .2126*v[0]+.7152*v[1]+.0722*v[2]};
+const cr=(a,b)=>{const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+function design(){
+  const bg=$('bg').value,um=$('one').checked,cols=um?[$('onec').value]:PAL[$('pal').value],box=$('cor');box.replaceChildren();
+  box.append(el('h3','Verificador de contraste (WCAG 2.2)'));
+  const row=el('div',null,'sw');let min=99;
+  cols.forEach(c=>{const r=cr(c,bg);min=Math.min(min,r);const s=el('div',null,'swc'),i=el('i','Aa');i.style.background=bg;i.style.color=c;
+    s.append(i,el('b',c.toUpperCase()),el('small',r.toFixed(1)+':1'));row.append(s)});
+  box.append(row);
+  const nivel=min>=7?'AAA':min>=4.5?'AA':min>=3?'AA (texto grande)':'Insuficiente',ok=min>=3,p=el('p',null,'mu');
+  p.append(el('span',nivel,'badge '+(ok?'ok':'no')),document.createTextNode(ok?`Contraste mínimo ${min.toFixed(1)}:1. As palavras da nuvem são texto grande, para o qual o WCAG pede pelo menos 3:1.`:`Contraste mínimo ${min.toFixed(1)}:1, abaixo dos 3:1 recomendados. Escurece ou clareia o fundo, ou muda de paleta.`));
+  box.append(p);if(!um)box.append(el('p','Harmonia: '+HARM[$('pal').value],'mu'));box.lastChild.style.marginTop='8px';
+}
+draw();panel();
+if(document.fonts)document.fonts.ready.then(()=>draw());
+</script>
+</body>
+</html>

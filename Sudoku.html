@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sudoku</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+:root{--bg:#f4ecdf;--pn:#fbf6ec;--tx:#5a4636;--mu:#8c7a68;--ac:#587a52;--bd:#e4d6c0;--ch:#efe4d2;--on:#fff;--ce:#fffaf0;--sel:#f8dfa6;--pa:#f6ecd9;--ig:#dfecd3;--er:#f4c9bd;--gr:#c4a77f;--fn:#eadcc6;--jg:#4d7a5a;--pi:#a0668a;--cf:#c0503a;--fx:#4a3728;--dd:#efe2cb;--ac2:#d9993b;--sh:0 8px 24px rgba(120,90,50,.16);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2b2420;--pn:#352d27;--tx:#f1e5d3;--mu:#b3a38f;--ac:#9cc28f;--bd:#4a3f36;--ch:#413730;--on:#1d2a1a;--ce:#3b322b;--sel:#6f5424;--pa:#43392f;--ig:#3d5339;--er:#6b3a31;--gr:#7a6548;--fn:#4a3f35;--jg:#a8d19a;--pi:#d7a9c6;--cf:#ff9c85;--fx:#f6ead9;--dd:#4b4034;--ac2:#e0a94f;--sh:none;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#2b2420;--pn:#352d27;--tx:#f1e5d3;--mu:#b3a38f;--ac:#9cc28f;--bd:#4a3f36;--ch:#413730;--on:#1d2a1a;--ce:#3b322b;--sel:#6f5424;--pa:#43392f;--ig:#3d5339;--er:#6b3a31;--gr:#7a6548;--fn:#4a3f35;--jg:#a8d19a;--pi:#d7a9c6;--cf:#ff9c85;--fx:#f6ead9;--dd:#4b4034;--ac2:#e0a94f;--sh:none;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 Nunito,"Segoe UI Variable","Segoe UI",system-ui,-apple-system,sans-serif}
+main{max-width:920px;margin:0 auto;padding:18px 18px 32px}
+.hd{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+h1{font:600 40px/1 Fraunces,Georgia,"Times New Roman",serif;margin:0;letter-spacing:-.01em}
+.sub{margin:4px 0 0;color:var(--mu);font-size:15px}
+h2{font:600 24px Fraunces,Georgia,serif;margin:0 0 8px}h3{font:600 17px Fraunces,Georgia,serif;margin:14px 0 4px}
+button,select{font:inherit;font-weight:600;color:var(--tx)}
+button{cursor:pointer;background:var(--ch);border:2px solid transparent;border-radius:999px;padding:8px 14px;transition:transform .12s,box-shadow .12s,border-color .12s}
+button:hover:not(:disabled){border-color:var(--ac);transform:translateY(-1px)}
+button:active:not(:disabled){transform:translateY(0)}
+button:disabled{opacity:.4;cursor:default}
+button[aria-pressed=true]{background:var(--ac);color:var(--on)}
+.go{background:var(--ac);color:var(--on);box-shadow:0 3px 0 rgba(0,0,0,.14)}
+select{width:100%;background:var(--ce);border:2px solid var(--bd);border-radius:14px;padding:8px 12px}
+:focus-visible{outline:3px solid var(--ac2);outline-offset:2px}
+.game{display:grid;grid-template-columns:minmax(0,540px) 280px;gap:22px;justify-content:center;align-items:start}
+@media(max-width:880px){.game{grid-template-columns:minmax(0,540px)}}
+.board{position:relative;display:grid;grid-template-columns:repeat(9,1fr);aspect-ratio:1;width:100%;border:9px solid var(--gr);border-radius:24px;overflow:hidden;box-shadow:var(--sh);container-type:inline-size;user-select:none;background:var(--ce)}
+.cell{position:relative;display:grid;place-items:center;background:var(--ce);border-right:1px solid var(--fn);border-bottom:1px solid var(--fn);cursor:pointer;min-width:0}
+.cell.c2,.cell.c5{border-right:3px solid var(--gr)}.cell.r2,.cell.r5{border-bottom:3px solid var(--gr)}
+.cell.c8{border-right:0}.cell.r8{border-bottom:0}
+.cell:hover{background:var(--pa)}
+.cell.dado{background:var(--dd)}
+.cell.pa{background:var(--pa)}.cell.ig{background:var(--ig)}.cell.dado.ig{background:var(--ig)}.cell.er{background:var(--er)}
+.cell.pista{box-shadow:inset 0 0 0 3px var(--pi)}.cell.cf{box-shadow:inset 0 0 0 3px var(--cf)}
+.cell.sel{background:var(--sel);box-shadow:inset 0 0 0 4px var(--ac2);border-radius:10px}
+.v{font-family:Nunito,system-ui,sans-serif;font-size:5.8cqw;font-weight:600;color:var(--jg)}
+.cell.dado .v{font-weight:800;color:var(--fx)}.cell.pista .v{color:var(--pi)}.cell.cf .v{color:var(--cf)}
+.nt{position:absolute;inset:3px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);font-size:2.4cqw;color:var(--mu);text-align:center;line-height:1;pointer-events:none}
+.nt span{display:grid;place-items:center}.nt .hl{color:var(--jg);font-weight:800;transform:scale(1.25)}
+.pausa .cell .v,.pausa .cell .nt{visibility:hidden}
+.ov{position:absolute;inset:0;display:none;place-items:center;text-align:center;font:600 24px Fraunces,Georgia,serif;background:var(--ce);z-index:2;cursor:pointer}
+.pausa .ov{display:grid}
+.side{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--pn);border:2px solid var(--bd);border-radius:22px;padding:14px;box-shadow:var(--sh)}
+.seg{display:flex;gap:4px;background:var(--ch);border-radius:999px;padding:4px}.seg label{flex:1}.seg input{position:absolute;opacity:0}
+.seg span{display:block;text-align:center;border-radius:999px;padding:6px 4px;cursor:pointer;font-weight:700;font-size:14px}
+.seg input:checked+span{background:var(--ac);color:var(--on)}
+.seg input:focus-visible+span{outline:3px solid var(--ac2);outline-offset:2px}
+.tm{font:700 36px/1 Nunito,ui-monospace,sans-serif;font-variant-numeric:tabular-nums;margin:0}
+.mu{color:var(--mu);margin:2px 0 0;font-size:14px}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pad button{font-size:24px;padding:6px 0;line-height:1.1;border-radius:18px;background:var(--pn);border:2px solid var(--bd);box-shadow:0 3px 0 var(--bd)}
+.pad small{display:block;font-weight:600;font-size:11px;color:var(--mu)}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label.o{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600}
+label.o input{accent-color:var(--ac);width:18px;height:18px}
+dialog{max-width:620px;width:calc(100% - 32px);max-height:88vh;overflow:auto;background:var(--pn);color:var(--tx);border:2px solid var(--bd);border-radius:26px;padding:24px;box-shadow:var(--sh)}
+dialog::backdrop{background:rgba(60,40,20,.5)}
+dialog ul{margin:4px 0;padding-left:20px}dialog li{margin:4px 0}
+kbd{background:var(--ch);border:1px solid var(--bd);border-radius:6px;padding:0 6px;font-size:13px}
+.hbt{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+#bidioma b{font-weight:800;letter-spacing:.04em}
+#btema::before{content:"";display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;vertical-align:-2px;background:conic-gradient(#f7c8b8,#f9e2a8,#c8e8c8,#bfe0f2,#d9c9f2,#f7c1d9,#f7c8b8)}
+.temas{margin-bottom:18px}
+.tg{display:grid;grid-template-columns:repeat(auto-fill,minmax(116px,1fr));gap:10px;margin-top:12px}
+.tg button{display:flex;flex-direction:column;gap:8px;align-items:center;border-radius:18px;background:var(--pn);border:2px solid var(--bd);padding:10px 8px;font-size:14px;color:var(--tx)}
+.tg button[aria-pressed=true]{background:var(--pn);color:var(--tx);border-color:var(--tx)}
+.tg button[aria-pressed=true] span::after{content:" ✓"}
+.gt{grid-column:1/-1;margin:8px 0 0;font-weight:700}
+.tg .dots{display:flex}.tg .dots i{width:26px;height:26px;border-radius:50%;border:2px solid var(--pn);margin-left:-7px}.tg .dots i:first-child{margin-left:0}
+@media(prefers-reduced-motion:reduce){button{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<div class="hd"><div><h1>Sudoku</h1><p class="sub" data-i="sub">Um jogo calmo, sem pressa.</p></div><div class="hbt"><button id="btema" aria-expanded="false" aria-controls="temas" data-i="tema">Tema de cor</button><button id="bidioma" aria-expanded="false" aria-controls="idiomas"><span data-i="lang">Idioma</span>: <b id="lcod">PT</b></button><button id="ajuda" class="go" data-i="ajuda">? Como jogar</button></div></div>
+<section class="card temas" id="temas" hidden data-ia="temaAria" aria-label="Escolha de tema de cor">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0" data-i="tema">Tema de cor</h3><button id="fechatema" data-i="fechar">Fechar</button></div>
+  <p class="mu" data-i="temaP">Escolhe uma paleta, pastel ou escura: muda o fundo, os botões e o tabuleiro.</p>
+  <div class="tg" id="tg" role="group" data-ia="tema" aria-label="Temas de cor"></div>
+</section>
+<section class="card temas" id="idiomas" hidden>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0" data-i="lang">Idioma</h3><button id="fechaidioma" data-i="fechar">Fechar</button></div>
+  <p class="mu" data-i="langP">Escolhe o idioma do jogo.</p>
+  <div class="tg" id="lg" role="group" data-ia="lang" aria-label="Idioma"></div>
+</section>
+<div class="game">
+  <div>
+    <div class="board" id="board" role="grid" data-ia="tabAria" aria-label="Tabuleiro de Sudoku"><div class="ov" id="ov"><span data-i="pausa1">Em pausa</span><br><small style="font:15px system-ui" data-i="pausa2">clica para continuar</small></div></div>
+    <p class="mu" id="msg" style="min-height:22px;margin-top:8px" aria-live="polite"></p>
+  </div>
+  <div class="side">
+    <div class="card">
+      <div class="seg" id="dif" role="radiogroup" data-ia="difAria" aria-label="Dificuldade">
+        <label><input type="radio" name="d" value="Fácil" checked><span data-i="d_Fácil">Fácil</span></label>
+        <label><input type="radio" name="d" value="Média"><span data-i="d_Média">Média</span></label>
+        <label><input type="radio" name="d" value="Difícil"><span data-i="d_Difícil">Difícil</span></label>
+      </div>
+      <button id="novo" style="width:100%;margin-top:8px" data-i="novo">Novo jogo</button>
+    </div>
+    <div class="card"><p class="tm" id="tm">00:00</p><p class="mu" id="st"></p><p class="mu" id="mb"></p></div>
+    <div class="pad" id="pad"></div>
+    <div class="tools">
+      <button id="bn" aria-pressed="false" data-i="notas">✎ Notas (N)</button><button id="ba" data-i="apagar">⌫ Apagar</button>
+      <button id="bu" data-i="anular">↶ Anular</button><button id="br" data-i="refazer">↷ Refazer</button>
+      <button id="bh" data-i="pista">💡 Pista (H)</button><button id="bv" data-i="verificar">✔ Verificar</button>
+      <button id="bx" data-i="notasAuto">Notas auto</button><button id="bp">⏸ Pausa (P)</button>
+    </div>
+    <button id="bs" data-i="solucao">Mostrar solução</button>
+    <label class="o"><input type="checkbox" id="conf" checked> <span data-i="conf">Destacar conflitos</span></label>
+    <label class="o"><input type="checkbox" id="limpar" checked> <span data-i="limpar">Limpar notas automaticamente</span></label>
+  </div>
+</div>
+</main>
+<dialog id="dlg"><div id="dc"></div><button id="fechar" class="go" style="margin-top:14px" data-i="fechar">Fechar</button></dialog>
+
+<script>
+const $=i=>document.getElementById(i);
+const PIST={"Fácil":38,"Média":31,"Difícil":26},PEN=30;
+const sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const pc=x=>{let k=0;while(x){x&=x-1;k++}return k};
+const fmt=s=>{const p=n=>String(n).padStart(2,"0"),h=s/3600|0;return(h?h+":":"")+p((s%3600)/60|0)+":"+p(s%60)};
+const VZ=[];for(let i=0;i<81;i++){const r=i/9|0,c=i%9,s=new Set();for(let k=0;k<9;k++){s.add(r*9+k);s.add(k*9+c)}
+  for(let a=0;a<3;a++)for(let b=0;b<3;b++)s.add(((r/3|0)*3+a)*9+(c/3|0)*3+b);s.delete(i);VZ.push([...s])}
+
+/* motor: resolver (bitmasks + célula com menos candidatos) e gerar */
+function resolver(grelha,limite=1,rnd=false){
+  const g=grelha.slice(),L=Array(9).fill(0),K=Array(9).fill(0),B=Array(9).fill(0);
+  for(let i=0;i<81;i++)if(g[i]){const r=i/9|0,c=i%9,b=(r/3|0)*3+(c/3|0),bit=1<<g[i];
+    if((L[r]|K[c]|B[b])&bit)return[0,null];L[r]|=bit;K[c]|=bit;B[b]|=bit}
+  const vz=[];g.forEach((v,i)=>{if(!v)vz.push(i)});let n=0,sol=null;
+  function rec(){
+    let mi=-1,mm=0,mn=10;
+    for(const i of vz){if(g[i])continue;const r=i/9|0,c=i%9,l=~(L[r]|K[c]|B[(r/3|0)*3+(c/3|0)])&0x3FE,k=pc(l);
+      if(k<mn){mi=i;mm=l;mn=k;if(k<=1)break}}
+    if(mi<0){n++;if(!sol)sol=g.slice();return n>=limite}
+    if(!mn)return false;
+    const r=mi/9|0,c=mi%9,b=(r/3|0)*3+(c/3|0);let ds=[];for(let d=1;d<10;d++)if(mm>>d&1)ds.push(d);
+    if(rnd)ds=sh(ds);
+    for(const d of ds){const bit=1<<d;g[mi]=d;L[r]|=bit;K[c]|=bit;B[b]|=bit;const p=rec();g[mi]=0;L[r]^=bit;K[c]^=bit;B[b]^=bit;if(p)return true}
+    return false}
+  rec();return[n,sol]}
+function gerar(dif){const full=resolver(Array(81).fill(0),1,true)[1],p=full.slice(),alvo=PIST[dif];let n=81;
+  for(const i of sh([...Array(81).keys()])){if(n<=alvo)break;const v=p[i];p[i]=0;if(resolver(p,2)[0]===1)n--;else p[i]=v}
+  return[p,full]}
+
+/* recordes (neste navegador) */
+const rec=()=>{try{return JSON.parse(localStorage.getItem("sudokuRec")||"{}")}catch(e){return{}}};
+function guardar(d,s){const r=rec(),a=r[d]||[],novo=!a.length||s<a[0];r[d]=[...a,s].sort((x,y)=>x-y).slice(0,5);
+  try{localStorage.setItem("sudokuRec",JSON.stringify(r))}catch(e){}return novo}
+
+/* tabuleiro */
+const cells=[],board=$("board");let S=null,notas=false;
+for(let i=0;i<81;i++){const c=document.createElement("div");c.setAttribute("role","gridcell");
+  c.innerHTML='<span class="v"></span><div class="nt">'+"<span></span>".repeat(9)+'</div>';
+  c.onclick=()=>{if(S.pausado)return pausa();S.sel=i;render()};board.append(c);cells.push(c)}
+for(let d=1;d<10;d++){const b=document.createElement("button");b.dataset.d=d;b.onclick=()=>colocar(d);$("pad").append(b)}
+
+const ok=()=>S&&!S.pausado&&!S.fim;
+const dif=()=>document.querySelector("input[name=d]:checked").value;
+const tempo=()=>Math.floor(S.ac+(S.run?(Date.now()-S.t0)/1000:0))+S.pen;
+const msg=t=>$("msg").textContent=t;
+function armar(b,fn){if(b.dataset.a){clearTimeout(+b.dataset.a);b.textContent=b.dataset.l;delete b.dataset.a;fn();return}
+  b.dataset.l=b.textContent;b.textContent=L("confirmar");b.dataset.a=setTimeout(()=>{b.textContent=b.dataset.l;delete b.dataset.a},3000)}
+
+function novo(){
+  $("msg").textContent=L("gerar");
+  setTimeout(()=>{const[p,sol]=gerar(dif());
+    S={v:p.slice(),n:Array(81).fill(0),sol,dado:p.map(x=>x>0),sel:40,undo:[],redo:[],err:0,pistas:0,pen:0,ac:0,t0:Date.now(),run:true,pausado:false,fim:false,erradas:new Set(),porPista:new Set(),d:dif()};
+    board.classList.remove("pausa");pausaBtn();msg(L("inicio",{d:L("d_"+S.d),n:S.dado.filter(Boolean).length}));render()},20)}
+
+function aplicar(e){for(const i in e){S.v[i]=e[i][0];S.n[i]=e[i][1]}render()}
+function alterar(nv){const a={};for(const i in nv)a[i]=[S.v[i],S.n[i]];
+  if(JSON.stringify(a)===JSON.stringify(nv))return;
+  aplicar(nv);S.undo.push([a,nv]);S.redo=[];if(S.v.every((x,i)=>x===S.sol[i]))vitoria()}
+function colocar(d){const i=S&&S.sel;if(!ok()||i==null||S.dado[i])return;
+  if(notas){if(!S.v[i])alterar({[i]:[0,S.n[i]^(1<<d)]});return}
+  if(S.v[i]===d){alterar({[i]:[0,0]});return}
+  const nv={[i]:[d,0]};
+  if($("limpar").checked)for(const j of VZ[i])if(S.n[j]>>d&1)nv[j]=[S.v[j],S.n[j]&~(1<<d)];
+  if(d!==S.sol[i]){S.err++;msg(L("errado"))}else msg("");
+  alterar(nv)}
+function apagar(){const i=S.sel;if(ok()&&i!=null&&!S.dado[i]&&(S.v[i]||S.n[i]))alterar({[i]:[0,0]})}
+function anular(){if(ok()&&S.undo.length){const t=S.undo.pop();S.redo.push(t);aplicar(t[0])}}
+function refazer(){if(ok()&&S.redo.length){const t=S.redo.pop();S.undo.push(t);aplicar(t[1])}}
+function pista(){if(!ok())return;let i=S.sel;
+  if(i==null||S.dado[i]||S.v[i]===S.sol[i]){const al=S.v.map((v,k)=>v!==S.sol[k]?k:-1).filter(k=>k>=0);if(!al.length)return;i=al[Math.random()*al.length|0];S.sel=i}
+  S.pistas++;S.pen+=PEN;S.porPista.add(i);msg(L("pistaUsada",{s:PEN}));alterar({[i]:[S.sol[i],0]})}
+function verificar(){if(!ok())return;S.erradas=new Set(S.v.map((v,i)=>v&&v!==S.sol[i]?i:-1).filter(i=>i>=0));
+  msg(S.erradas.size?L("errados",{n:S.erradas.size}):L("tudoOk"));
+  const e=S.erradas;setTimeout(()=>{if(S&&S.erradas===e){S.erradas=new Set();render()}},2500);render()}
+function autoNotas(){if(!ok())return;const nv={};
+  S.v.forEach((v,i)=>{if(!v){let m=0x3FE;for(const j of VZ[i])if(S.v[j])m&=~(1<<S.v[j]);nv[i]=[0,m]}});
+  alterar(nv);msg(L("notasOk"))}
+function pausa(){if(!S||S.fim)return;
+  if(S.pausado){S.t0=Date.now();S.run=true;S.pausado=false}else{S.ac+=(Date.now()-S.t0)/1000;S.run=false;S.pausado=true}
+  board.classList.toggle("pausa",S.pausado);pausaBtn();render()}
+function solucao(){if(!S||S.fim)return;S.v=S.sol.slice();S.n.fill(0);S.fim=true;S.ac+=S.run?(Date.now()-S.t0)/1000:0;S.run=false;msg(L("solMostrada"));render()}
+function vitoria(){S.fim=true;S.ac+=(Date.now()-S.t0)/1000;S.run=false;const t=tempo(),rec=guardar(S.d,t);
+  msg(L("parabens"));render();
+  abrir(`<h2>${L("winH")}</h2><p>${L("winT",{d:L("d_"+S.d)})}</p><p>${L("winS",{t:fmt(t),e:S.err,p:S.pistas})}${rec?L("winR"):""}</p>`)}
+
+/* desenho */
+function render(){
+  const s=S.sel,vs=s!=null?S.v[s]:0,cf=new Set();
+  if($("conf").checked)S.v.forEach((v,i)=>{if(v&&VZ[i].some(j=>S.v[j]===v))cf.add(i)});
+  cells.forEach((c,i)=>{const v=S.v[i],cl=["cell","c"+i%9,"r"+(i/9|0)];
+    if(S.dado[i])cl.push("dado");else if(S.porPista.has(i)&&v===S.sol[i])cl.push("pista");
+    if(cf.has(i))cl.push("cf");
+    if(S.erradas.has(i))cl.push("er");else if(i===s)cl.push("sel");else if(vs&&v===vs)cl.push("ig");else if(s!=null&&VZ[s].includes(i))cl.push("pa");
+    c.className=cl.join(" ");c.firstChild.textContent=v||"";
+    [...c.lastChild.children].forEach((n,k)=>{const on=!v&&(S.n[i]>>(k+1)&1);n.textContent=on?k+1:"";n.className=on&&vs===k+1?"hl":""})});
+  document.querySelectorAll("#pad button").forEach(b=>{const d=+b.dataset.d,r=9-S.v.filter(x=>x===d).length;
+    b.innerHTML=`${d}<small>(${Math.max(r,0)})</small>`;b.disabled=r<=0});
+  $("st").textContent=L("statsT",{e:S.err,p:S.pistas,v:S.v.filter(x=>!x).length});
+  const r=rec()[S.d];$("mb").textContent=L("melhorT",{t:r?fmt(r[0]):"—"});
+}
+setInterval(()=>{if(S)$("tm").textContent=fmt(tempo())},250);
+
+/* ajuda e diálogos */
+const dlg=$("dlg");
+function abrir(h){$("dc").innerHTML=h;dlg.showModal()}
+$("fechar").onclick=()=>dlg.close();
+const AJ_PT=`<h2>Como jogar Sudoku</h2>
+<h3>Objetivo</h3><p>Preencher toda a grelha 9×9 com números de 1 a 9, de modo que <b>cada linha</b>, <b>cada coluna</b> e <b>cada caixa 3×3</b> contenham os números de 1 a 9, sem repetir nenhum.</p>
+<h3>Regras</h3><ul><li>As casas com fundo mais escuro já vêm dadas e não se alteram.</li><li>Um número não pode repetir-se na mesma linha, coluna ou caixa.</li><li>Cada puzzle tem uma única solução e resolve-se sempre por lógica, sem adivinhar.</li></ul>
+<h3>Como usar o jogo</h3><ul><li>Toca numa casa vazia e escolhe um número nos botões (ou no teclado). Carregar outra vez no mesmo número apaga-o.</li><li><b>✎ Notas:</b> liga este modo para apontar, como números pequenos dentro da casa, os valores que ainda podem caber. Ao colocares um número, as notas iguais nas casas vizinhas desaparecem (podes desligar).</li><li><b>Notas auto</b> preenche todos os candidatos possíveis de uma só vez.</li><li><b>Verificar</b> assinala a vermelho os números errados. <b>Anular/Refazer</b> desfazem e repõem jogadas.</li><li><b>Pista</b> revela uma casa, mas soma ${PEN} s ao tempo. <b>Pausa</b> esconde o tabuleiro e pára o relógio.</li><li>Os botões 1–9 mostram quantas vezes cada número ainda falta colocar.</li></ul>
+<h3>Estratégias</h3><ul><li><b>Candidato único:</b> numa casa só cabe um número.</li><li><b>Posição única:</b> numa linha, coluna ou caixa, um número só tem uma casa possível.</li><li>Começa pelos números que já aparecem mais vezes e usa as notas nos casos difíceis.</li></ul>
+<h3>Dificuldades</h3><p>Fácil: cerca de 38 números dados · Média: 31 · Difícil: 26. Quanto menos números dados, mais dedução é preciso fazer.</p>
+<h3>Pontuação</h3><p>O tempo conta, e cada pista soma ${PEN} s. Os erros não terminam o jogo, mas são contados. Os 5 melhores tempos de cada nível ficam guardados neste navegador.</p>
+<h3>Teclado</h3><p><kbd>1</kbd>–<kbd>9</kbd> número/nota · <kbd>Backspace</kbd> apagar · setas mover · <kbd>N</kbd> notas · <kbd>H</kbd> pista · <kbd>P</kbd> pausa · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> anular/refazer</p>`;
+$("ajuda").onclick=()=>abrir(AJ[lang]);
+
+/* controlos */
+$("novo").onclick=e=>S&&!S.fim&&S.undo.length?armar(e.target,novo):novo();
+$("bn").onclick=()=>{notas=!notas;$("bn").setAttribute("aria-pressed",notas)};
+$("ba").onclick=apagar;$("bu").onclick=anular;$("br").onclick=refazer;$("bh").onclick=pista;$("bv").onclick=verificar;$("bx").onclick=autoNotas;
+$("bp").onclick=pausa;$("ov").onclick=pausa;$("bs").onclick=e=>armar(e.target,solucao);$("conf").onchange=()=>render();
+addEventListener("keydown",e=>{if(dlg.open||!S)return;const k=e.key;
+  if(e.ctrlKey||e.metaKey){if(k==="z"){e.preventDefault();anular()}else if(k==="y"){e.preventDefault();refazer()}return}
+  if(/^[1-9]$/.test(k))colocar(+k);
+  else if(k==="Backspace"||k==="Delete"||k==="0")apagar();
+  else if(k.startsWith("Arrow")&&S.sel!=null&&!S.pausado){e.preventDefault();const r=S.sel/9|0,c=S.sel%9,m={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]}[k];S.sel=((r+m[0]+9)%9)*9+(c+m[1]+9)%9;render()}
+  else if(k==="n"||k==="N")$("bn").click();
+  else if(k==="h"||k==="H")pista();
+  else if(k==="p"||k==="P")pausa()});
+/* temas de cor pastel (alteram fundo, botões e tabuleiro) */
+const HS=(h,s,l,a)=>`hsl(${(h+360)%360} ${s}% ${l}%${a?` / ${a}`:""})`;
+const paleta=h=>({bg:HS(h,55,92),pn:HS(h,60,96),ch:HS(h,45,86),bd:HS(h,35,78),ce:HS(h,70,98),pa:HS(h,45,93),dd:HS(h,40,87),gr:HS(h,28,55),fn:HS(h,35,85),ig:HS(h+50,50,84),sel:HS(h+35,90,82),tx:HS(h,25,20),mu:HS(h,15,36),ac:HS(h,55,72),on:HS(h,35,16),jg:HS(h+20,45,30),fx:HS(h,30,16),ac2:HS(h,45,38),er:HS(5,70,88),cf:HS(5,60,40),pi:HS(300,35,40),sh:`0 8px 24px ${HS(h,30,40,.18)}`});
+/* temas escuros e suaves: sem preto puro nem branco puro, saturação baixa e luminosidade controlada para cansar menos a vista */
+const paletaE=(h,s)=>({bg:HS(h,s,10),pn:HS(h,s,14),ch:HS(h,s,19),bd:HS(h,s-6,28),ce:HS(h,s,16),pa:HS(h,s,21),dd:HS(h,s,24),gr:HS(h,s-8,46),fn:HS(h,s-6,26),ig:HS(h+50,s,26),sel:HS(h+35,s+14,28),tx:HS(h,18,84),mu:HS(h,12,64),ac:HS(h,s+10,64),on:HS(h,s,10),jg:HS(h+20,45,80),fx:HS(h,15,90),ac2:HS(h+35,55,62),er:HS(5,45,28),cf:HS(5,70,70),pi:HS(300,40,74),sh:"none"});
+const corTema=t=>t.e?paletaE(t.h,t.s):paleta(t.h);
+const TEMAS=[{id:"pessego",n:"Pêssego",h:22},{id:"menta",n:"Menta",h:150},{id:"ceu",n:"Céu",h:205},{id:"lavanda",n:"Lavanda",h:262},{id:"rosa",n:"Rosa",h:335},{id:"limao",n:"Limão",h:62},{id:"coral",n:"Coral",h:6},{id:"turquesa",n:"Turquesa",h:178},{id:"auto",n:"Aconchego",pts:["#f4ecdf","#587a52","#2b2420"],e:1},{id:"noite",n:"Noite",h:225,s:28,e:1},{id:"floresta",n:"Floresta",h:145,s:26,e:1},{id:"oceano",n:"Oceano",h:190,s:30,e:1},{id:"ameixa",n:"Ameixa",h:290,s:24,e:1},{id:"vinho",n:"Vinho",h:345,s:28,e:1},{id:"ambar",n:"Âmbar",h:32,s:30,e:1},{id:"carvao",n:"Carvão",h:220,s:10,e:1}];
+let tema=(()=>{try{return localStorage.getItem("sudokuTema")||"auto"}catch(e){return"auto"}})();
+function aplicarTema(id,guardarTema=true){
+  const r=document.documentElement,t=TEMAS.find(x=>x.id===id)||TEMAS.find(x=>x.id==="auto");tema=t.id;
+  Object.keys(paleta(0)).forEach(k=>r.style.removeProperty("--"+k));r.style.removeProperty("color-scheme");
+  if(t.h!=null){const v=corTema(t);for(const k in v)r.style.setProperty("--"+k,v[k]);r.style.setProperty("color-scheme",t.e?"dark":"light")}
+  document.querySelectorAll("#tg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.id===tema));
+  if(guardarTema)try{localStorage.setItem("sudokuTema",tema)}catch(e){}
+}
+TEMAS.forEach((t,i)=>{if(i===0||t.e&&!TEMAS[i-1].e){const g=document.createElement("p");g.className="gt mu";g.dataset.i=t.e?"grpE":"grpC";$("tg").append(g)}const b=document.createElement("button"),pts=t.pts||[corTema(t).bg,corTema(t).ac,corTema(t).sel];b.dataset.id=t.id;b.setAttribute("aria-pressed","false");
+  b.innerHTML='<span class="dots">'+pts.map(c=>`<i style="background:${c}"></i>`).join("")+`</span><span data-tn="${t.id}">${t.n}</span>`;b.onclick=()=>aplicarTema(t.id);$("tg").append(b)});
+const abrirTemas=a=>{$("temas").hidden=!a;$("btema").setAttribute("aria-expanded",a);if(a)abrirIdiomas(false)};
+$("btema").onclick=()=>abrirTemas($("temas").hidden);$("fechatema").onclick=()=>abrirTemas(false);
+aplicarTema(tema,false);
+/* idiomas: português (Portugal), inglês e espanhol */
+const I18N={
+pt:{sub:"Um jogo calmo, sem pressa.",tema:"Tema de cor",lang:"Idioma",ajuda:"? Como jogar",fechar:"Fechar",temaP:"Escolhe uma paleta, pastel ou escura: muda o fundo, os botões e o tabuleiro.",langP:"Escolhe o idioma do jogo.",grpC:"Claros e pastel",grpE:"Escuros e suaves (menos brilho, mais conforto à noite)",temaAria:"Escolha de tema de cor",tabAria:"Tabuleiro de Sudoku",difAria:"Dificuldade",pausa1:"Em pausa",pausa2:"clica para continuar","d_Fácil":"Fácil","d_Média":"Média","d_Difícil":"Difícil",novo:"Novo jogo",notas:"✎ Notas (N)",apagar:"⌫ Apagar",anular:"↶ Anular",refazer:"↷ Refazer",pista:"💡 Pista (H)",verificar:"✔ Verificar",notasAuto:"Notas auto",solucao:"Mostrar solução",conf:"Destacar conflitos",limpar:"Limpar notas automaticamente",pausaB:"⏸ Pausa (P)",contB:"▶ Continuar (P)",confirmar:"Confirmar?",gerar:"A gerar puzzle…",inicio:"Nível {d}: {n} números dados. Boa sorte!",errado:"Esse número não pertence aqui.",pistaUsada:"Pista usada: +{s} s ao tempo.",errados:"{n} número(s) errado(s), assinalados a vermelho.",tudoOk:"Tudo certo até agora!",notasOk:"Notas preenchidas com todos os candidatos possíveis.",solMostrada:"Solução mostrada. O tempo não foi registado.",parabens:"Parabéns! Clica em “Novo jogo” para continuar.",winH:"Parabéns! 🎉",winT:"Completaste o Sudoku <b>{d}</b>.",winS:"Tempo: <b>{t}</b><br>Erros: {e} · Pistas: {p}",winR:"<br>★ Novo melhor tempo!",statsT:"Erros: {e} · Pistas: {p} · Vazias: {v}",melhorT:"Melhor tempo: {t}",n_pessego:"Pêssego",n_menta:"Menta",n_ceu:"Céu",n_lavanda:"Lavanda",n_rosa:"Rosa",n_limao:"Limão",n_coral:"Coral",n_turquesa:"Turquesa",n_auto:"Aconchego",n_noite:"Noite",n_floresta:"Floresta",n_oceano:"Oceano",n_ameixa:"Ameixa",n_vinho:"Vinho",n_ambar:"Âmbar",n_carvao:"Carvão"},
+en:{sub:"A calm game, no rush.",tema:"Colour theme",lang:"Language",ajuda:"? How to play",fechar:"Close",temaP:"Pick a palette, pastel or dark: it changes the background, the buttons and the board.",langP:"Choose the game language.",grpC:"Light and pastel",grpE:"Dark and soft (less glare, easier on the eyes at night)",temaAria:"Colour theme picker",tabAria:"Sudoku board",difAria:"Difficulty",pausa1:"Paused",pausa2:"click to continue","d_Fácil":"Easy","d_Média":"Medium","d_Difícil":"Hard",novo:"New game",notas:"✎ Notes (N)",apagar:"⌫ Erase",anular:"↶ Undo",refazer:"↷ Redo",pista:"💡 Hint (H)",verificar:"✔ Check",notasAuto:"Auto notes",solucao:"Show solution",conf:"Highlight conflicts",limpar:"Clear notes automatically",pausaB:"⏸ Pause (P)",contB:"▶ Resume (P)",confirmar:"Confirm?",gerar:"Generating puzzle…",inicio:"Level {d}: {n} numbers given. Good luck!",errado:"That number doesn’t belong here.",pistaUsada:"Hint used: +{s} s added to your time.",errados:"{n} wrong number(s), marked in red.",tudoOk:"All correct so far!",notasOk:"Notes filled with every possible candidate.",solMostrada:"Solution shown. Your time was not recorded.",parabens:"Well done! Click “New game” to keep playing.",winH:"Well done! 🎉",winT:"You completed the <b>{d}</b> Sudoku.",winS:"Time: <b>{t}</b><br>Mistakes: {e} · Hints: {p}",winR:"<br>★ New best time!",statsT:"Mistakes: {e} · Hints: {p} · Empty: {v}",melhorT:"Best time: {t}",n_pessego:"Peach",n_menta:"Mint",n_ceu:"Sky",n_lavanda:"Lavender",n_rosa:"Pink",n_limao:"Lime",n_coral:"Coral",n_turquesa:"Turquoise",n_auto:"Cozy",n_noite:"Night",n_floresta:"Forest",n_oceano:"Ocean",n_ameixa:"Plum",n_vinho:"Wine",n_ambar:"Amber",n_carvao:"Charcoal"},
+es:{sub:"Un juego tranquilo, sin prisa.",tema:"Tema de color",lang:"Idioma",ajuda:"? Cómo jugar",fechar:"Cerrar",temaP:"Elige una paleta, pastel u oscura: cambia el fondo, los botones y el tablero.",langP:"Elige el idioma del juego.",grpC:"Claros y pastel",grpE:"Oscuros y suaves (menos brillo, más comodidad de noche)",temaAria:"Selector de tema de color",tabAria:"Tablero de Sudoku",difAria:"Dificultad",pausa1:"En pausa",pausa2:"haz clic para continuar","d_Fácil":"Fácil","d_Média":"Media","d_Difícil":"Difícil",novo:"Nueva partida",notas:"✎ Notas (N)",apagar:"⌫ Borrar",anular:"↶ Deshacer",refazer:"↷ Rehacer",pista:"💡 Pista (H)",verificar:"✔ Comprobar",notasAuto:"Notas auto",solucao:"Mostrar solución",conf:"Resaltar conflictos",limpar:"Limpiar notas automáticamente",pausaB:"⏸ Pausa (P)",contB:"▶ Continuar (P)",confirmar:"¿Confirmar?",gerar:"Generando puzle…",inicio:"Nivel {d}: {n} números dados. ¡Buena suerte!",errado:"Ese número no va aquí.",pistaUsada:"Pista usada: +{s} s al tiempo.",errados:"{n} número(s) incorrecto(s), marcados en rojo.",tudoOk:"¡Todo correcto hasta ahora!",notasOk:"Notas rellenadas con todos los candidatos posibles.",solMostrada:"Solución mostrada. El tiempo no se ha registrado.",parabens:"¡Enhorabuena! Pulsa «Nueva partida» para seguir jugando.",winH:"¡Enhorabuena! 🎉",winT:"Has completado el Sudoku <b>{d}</b>.",winS:"Tiempo: <b>{t}</b><br>Errores: {e} · Pistas: {p}",winR:"<br>★ ¡Nuevo mejor tiempo!",statsT:"Errores: {e} · Pistas: {p} · Vacías: {v}",melhorT:"Mejor tiempo: {t}",n_pessego:"Melocotón",n_menta:"Menta",n_ceu:"Cielo",n_lavanda:"Lavanda",n_rosa:"Rosa",n_limao:"Lima",n_coral:"Coral",n_turquesa:"Turquesa",n_auto:"Acogedor",n_noite:"Noche",n_floresta:"Bosque",n_oceano:"Océano",n_ameixa:"Ciruela",n_vinho:"Vino",n_ambar:"Ámbar",n_carvao:"Carbón"}};
+const LANGS=[["pt","Português (Portugal)","PT","pt-PT"],["en","English","EN","en"],["es","Español","ES","es"]];
+let lang=(()=>{try{const s=localStorage.getItem("sudokuLang");return I18N[s]?s:"pt"}catch(e){return"pt"}})();
+const L=(k,o={})=>String(I18N[lang][k]??I18N.pt[k]??k).replace(/\{(\w+)\}/g,(_,x)=>o[x]??"");
+const AJ={pt:AJ_PT,
+en:`<h2>How to play Sudoku</h2>
+<h3>Goal</h3><p>Fill the whole 9×9 grid with the numbers 1 to 9 so that <b>every row</b>, <b>every column</b> and <b>every 3×3 box</b> contains each number from 1 to 9 exactly once.</p>
+<h3>Rules</h3><ul><li>Cells with a darker background are given and can’t be changed.</li><li>A number can’t repeat in the same row, column or box.</li><li>Every puzzle has a single solution and can always be solved by logic, without guessing.</li></ul>
+<h3>Using the game</h3><ul><li>Tap an empty cell and choose a number with the buttons (or the keyboard). Pressing the same number again erases it.</li><li><b>✎ Notes:</b> turn this mode on to jot down, as small numbers inside the cell, the values that could still fit. When you place a number, matching notes in neighbouring cells disappear (you can switch this off).</li><li><b>Auto notes</b> fills in every possible candidate at once.</li><li><b>Check</b> marks wrong numbers in red. <b>Undo/Redo</b> take back and restore moves.</li><li><b>Hint</b> reveals one cell but adds ${PEN} s to your time. <b>Pause</b> hides the board and stops the clock.</li><li>The 1–9 buttons show how many times each number is still missing.</li></ul>
+<h3>Strategies</h3><ul><li><b>Single candidate:</b> only one number fits in a cell.</li><li><b>Single position:</b> in a row, column or box, a number has only one possible cell.</li><li>Start with the numbers that already appear most often and use notes for the hard spots.</li></ul>
+<h3>Difficulty</h3><p>Easy: about 38 given numbers · Medium: 31 · Hard: 26. The fewer the givens, the more deduction you need.</p>
+<h3>Scoring</h3><p>The faster you finish, the better: time counts, and each hint adds ${PEN} s. Mistakes don’t end the game but are counted. The 5 best times for each level are saved in this browser.</p>
+<h3>Keyboard</h3><p><kbd>1</kbd>–<kbd>9</kbd> number/note · <kbd>Backspace</kbd> erase · arrows move · <kbd>N</kbd> notes · <kbd>H</kbd> hint · <kbd>P</kbd> pause · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> undo/redo</p>`,
+es:`<h2>Cómo jugar al Sudoku</h2>
+<h3>Objetivo</h3><p>Rellenar toda la cuadrícula de 9×9 con los números del 1 al 9 de modo que <b>cada fila</b>, <b>cada columna</b> y <b>cada caja de 3×3</b> contengan los números del 1 al 9 sin repetir ninguno.</p>
+<h3>Reglas</h3><ul><li>Las casillas con el fondo más oscuro ya vienen dadas y no se pueden cambiar.</li><li>Un número no puede repetirse en la misma fila, columna o caja.</li><li>Cada puzle tiene una única solución y siempre se resuelve por lógica, sin adivinar.</li></ul>
+<h3>Cómo usar el juego</h3><ul><li>Toca una casilla vacía y elige un número con los botones (o con el teclado). Pulsar otra vez el mismo número lo borra.</li><li><b>✎ Notas:</b> activa este modo para apuntar, como números pequeños dentro de la casilla, los valores que todavía podrían caber. Al colocar un número, las notas iguales de las casillas vecinas desaparecen (puedes desactivarlo).</li><li><b>Notas auto</b> rellena de una vez todos los candidatos posibles.</li><li><b>Comprobar</b> marca en rojo los números incorrectos. <b>Deshacer/Rehacer</b> anulan y recuperan jugadas.</li><li><b>Pista</b> revela una casilla, pero suma ${PEN} s al tiempo. <b>Pausa</b> oculta el tablero y detiene el reloj.</li><li>Los botones 1–9 muestran cuántas veces falta aún cada número.</li></ul>
+<h3>Estrategias</h3><ul><li><b>Candidato único:</b> en una casilla solo cabe un número.</li><li><b>Posición única:</b> en una fila, columna o caja, un número solo tiene una casilla posible.</li><li>Empieza por los números que ya aparecen más veces y usa las notas en los casos difíciles.</li></ul>
+<h3>Dificultades</h3><p>Fácil: unos 38 números dados · Media: 31 · Difícil: 26. Cuantos menos números dados, más deducción hace falta.</p>
+<h3>Puntuación</h3><p>Cuenta el tiempo y cada pista suma ${PEN} s. Los errores no terminan la partida, pero se cuentan. Los 5 mejores tiempos de cada nivel se guardan en este navegador.</p>
+<h3>Teclado</h3><p><kbd>1</kbd>–<kbd>9</kbd> número/nota · <kbd>Retroceso</kbd> borrar · flechas mover · <kbd>N</kbd> notas · <kbd>H</kbd> pista · <kbd>P</kbd> pausa · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> deshacer/rehacer</p>`};
+function pausaBtn(){$("bp").textContent=L(S&&S.pausado?"contB":"pausaB")}
+function aplicarIdioma(){
+  const cur=LANGS.find(x=>x[0]===lang);document.documentElement.lang=cur[3];$("lcod").textContent=cur[2];
+  document.querySelectorAll("[data-i]").forEach(e=>e.textContent=L(e.dataset.i));
+  document.querySelectorAll("[data-ia]").forEach(e=>e.setAttribute("aria-label",L(e.dataset.ia)));
+  document.querySelectorAll("[data-tn]").forEach(e=>e.textContent=L("n_"+e.dataset.tn));
+  document.querySelectorAll("#lg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.id===lang));
+  pausaBtn();if(S)render();
+}
+LANGS.forEach(x=>{const b=document.createElement("button");b.dataset.id=x[0];b.setAttribute("aria-pressed","false");b.innerHTML=`<span>${x[1]}</span>`;
+  b.onclick=()=>{lang=x[0];try{localStorage.setItem("sudokuLang",lang)}catch(e){}aplicarIdioma()};$("lg").append(b)});
+function abrirIdiomas(a){$("idiomas").hidden=!a;$("bidioma").setAttribute("aria-expanded",a);if(a)abrirTemas(false)}
+$("bidioma").onclick=()=>abrirIdiomas($("idiomas").hidden);$("fechaidioma").onclick=()=>abrirIdiomas(false);
+aplicarIdioma();
+novo();
+</script>
+</body>
+</html>

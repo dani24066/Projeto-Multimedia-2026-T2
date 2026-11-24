@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ferramentas de ecrã e cor</title>
+<style>
+:root{--bg:#f2f3ef;--pn:#fff;--tx:#1b221e;--mu:#65706a;--ac:#0a873a;--bd:#d8dbd3;--ch:#e8ede5;--on:#fff;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1411;--pn:#171e1a;--tx:#e5ede7;--mu:#94a198;--ac:#3fcf7a;--bd:#2a342d;--ch:#202a23;--on:#06130b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1411;--pn:#171e1a;--tx:#e5ede7;--mu:#94a198;--ac:#3fcf7a;--bd:#2a342d;--ch:#202a23;--on:#06130b;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:20px}
+h1{font:600 28px/1.15 Georgia,"Times New Roman",serif;margin:0 0 4px}
+h2{font:600 19px Georgia,serif;margin:0 0 8px}
+.sub,.mu{color:var(--mu);margin:0}
+.sub{margin-bottom:16px}
+nav{display:flex;gap:6px;border-bottom:1px solid var(--bd);margin-bottom:16px;overflow-x:auto}
+nav button{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:10px 14px;font:inherit;font-weight:600;color:var(--mu);cursor:pointer;white-space:nowrap}
+nav button[aria-selected=true]{color:var(--tx);border-color:var(--ac)}
+.card{background:var(--pn);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px}
+label{display:block;font-weight:600;font-size:13px;margin:0 0 5px}
+input,select{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;width:100%}
+input[type=color]{width:56px;height:40px;padding:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.row>*{flex:1 1 140px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
+button.chip{font:inherit;cursor:pointer;border-radius:999px;border:1px solid var(--bd);background:var(--ch);color:var(--tx);padding:4px 12px}
+button.chip:hover,button.chip.on{border-color:var(--ac)}
+button.chip.on{background:var(--ac);color:var(--on)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.big{font:600 30px/1.1 Georgia,serif;margin:0 0 6px}
+dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:10px 0 0}
+dt{color:var(--mu)}dd{margin:0}
+.stage{display:grid;place-items:center;height:210px;background:var(--bg);border:1px dashed var(--bd);border-radius:10px}
+.box{display:grid;place-items:center;background:var(--ac);color:var(--on);font-weight:700;border-radius:4px;max-width:92%;max-height:92%}
+.split{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}
+@media(max-width:700px){.split{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--bd)}
+th{color:var(--mu);font-weight:600;font-size:13px}
+.sw{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 14px}
+.sw button{width:96px;height:64px;border:1px solid var(--bd);border-radius:8px;cursor:pointer;font:600 13px ui-monospace,Consolas,monospace}
+.err{color:#c0392b;min-height:20px;margin:6px 0 0;font-size:13px}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .err{color:#ff8a7a}}
+</style>
+</head>
+<body>
+<main>
+<h1>Ferramentas de ecrã e cor</h1>
+<p class="sub">Classifica resoluções, calcula proporções e explora paletas em hexadecimal.</p>
+<nav role="tablist" id="tabs">
+  <button role="tab" aria-selected="true" data-t="t1">Resolução</button>
+  <button role="tab" aria-selected="false" data-t="t2">Proporções</button>
+  <button role="tab" aria-selected="false" data-t="t3">Paletas de cor</button>
+</nav>
+
+<section id="t1">
+  <div class="card">
+    <label for="res">Resolução em píxeis (ex.: 1920 ou 1920x1080)</label>
+    <input id="res" value="1920x1080" autocomplete="off">
+    <p class="err" id="resErr"></p>
+    <div class="chips" id="resChips"></div>
+  </div>
+  <div class="split">
+    <div class="card"><p class="big" id="resCat"></p><dl id="resDl"></dl></div>
+    <div class="card"><div class="stage" id="resStage"></div></div>
+  </div>
+</section>
+
+<section id="t2" hidden>
+  <div class="card">
+    <label for="rac">Rácio (ex.: 16:9)</label>
+    <input id="rac" value="16:9" autocomplete="off">
+    <div class="chips" id="racChips"></div>
+    <div class="row" style="margin-top:14px">
+      <div><label for="lado">Tenho a</label><select id="lado"><option value="l">Largura</option><option value="a">Altura</option></select></div>
+      <div><label for="val">Valor em píxeis</label><input id="val" type="number" min="1" value="1920"></div>
+    </div>
+    <p class="err" id="racErr"></p>
+  </div>
+  <div class="split">
+    <div class="card"><p class="big" id="racRes"></p><p class="mu" id="racNote"></p>
+      <table style="margin-top:12px"><thead><tr><th>Largura</th><th>Altura</th><th>Categoria</th></tr></thead><tbody id="racTab"></tbody></table></div>
+    <div class="card"><div class="stage" id="racStage"></div></div>
+  </div>
+</section>
+
+<section id="t3" hidden>
+  <div class="card">
+    <label for="hex">Cor base (hexadecimal)</label>
+    <div class="row" style="align-items:center">
+      <input id="hex" value="#0A873A" maxlength="7" autocomplete="off" style="max-width:150px;flex:0 1 150px;font-family:ui-monospace,Consolas,monospace">
+      <input id="cor" type="color" value="#0a873a" aria-label="Escolher cor" style="flex:0 0 56px">
+      <button class="chip" id="cpJson" style="flex:0 0 auto">Copiar paleta em JSON</button>
+    </div>
+    <p class="err" id="hexErr"></p>
+    <dl id="corInfo"></dl>
+    <p class="mu" id="msg" style="margin-top:10px">Clica numa cor para a copiar. Duplo clique para a usar como base.</p>
+  </div>
+  <div class="card" id="paletas"></div>
+</section>
+</main>
+<script>
+const $=i=>document.getElementById(i);
+function el(t,x,c,f){const e=document.createElement(t);if(x!=null)e.textContent=x;if(c)e.className=c;if(f)e.onclick=f;return e}
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+
+/* ---------- Resolução ---------- */
+const CATS=[[7680,"8K UHD"],[3840,"4K Ultra HD"],[2560,"QHD (2K)"],[1920,"Full HD (FHD)"],[1280,"HD"],[1,"SD"]];
+const cat=(l,a)=>{const m=Math.max(l,a||0);return(CATS.find(c=>m>=c[0])||CATS[5])[1]};
+const STD={"1:1":[1,1],"4:3":[4,3],"3:2":[3,2],"16:10":[16,10],"16:9":[16,9],"21:9":[21,9],"4:5":[4,5],"9:16":[9,16]};
+function nearest(l,a){const v=l/a;let best=null;for(const[n,[x,y]]of Object.entries(STD)){const d=Math.abs(v-x/y);if(!best||d<best.d)best={n,d,x,y}}return{n:best.n,dev:(v/(best.x/best.y)-1)*100}}
+function parseRes(t){const m=t.trim().toLowerCase().replace("×","x").match(/^(\d+)\s*(?:[x*,; ]\s*(\d+))?$/);
+  if(!m)throw"Formato inválido. Exemplos: 1920 ou 1920x1080.";const l=+m[1],a=m[2]?+m[2]:null;
+  if(l<=0||a===0)throw"Os valores têm de ser maiores que zero.";return[l,a]}
+function box(host,l,a,label){host.replaceChildren();const b=el('div',label);
+  b.className='box';b.style.aspectRatio=l+'/'+a;if(l>=a)b.style.width='min(92%,340px)';else b.style.height='170px';host.append(b)}
+function resDraw(){
+  const out=$('resDl');out.replaceChildren();$('resErr').textContent='';
+  try{
+    const[l,a]=parseRes($('res').value);$('resCat').textContent=cat(l,a);
+    const add=(k,v)=>out.append(el('dt',k),el('dd',v));
+    if(!a){add('Nota','Indica também a altura (1920x1080) para ver proporção e megapixels.');$('resStage').replaceChildren();return}
+    const g=gcd(l,a),n=nearest(l,a);
+    add('Dimensões',`${l} × ${a} px (${l>a?'horizontal':a>l?'vertical':'quadrada'})`);
+    add('Proporção exata',`${l/g}:${a/g}  (decimal ${(l/a).toFixed(4)})`);
+    add('Formato padrão',Math.abs(n.dev)<.5?`Corresponde a ${n.n}`:`Mais próximo: ${n.n} (${n.dev>0?'+':''}${n.dev.toFixed(1)}%)`);
+    add('Megapixels',`${(l*a/1e6).toFixed(2)} MP`);
+    box($('resStage'),l,a,`${l/g}:${a/g}`);
+  }catch(e){$('resErr').textContent=e;$('resCat').textContent='';$('resStage').replaceChildren()}
+}
+["1280x720","1920x1080","2560x1440","3840x2160","1024x768","1080x1920","1080x1080"].forEach(r=>$('resChips').append(el('button',r,'chip',()=>{$('res').value=r;resDraw()})));
+$('res').oninput=resDraw;
+
+/* ---------- Proporções ---------- */
+function parseRac(t){const m=t.toLowerCase().match(/^\s*(\d+(?:[.,]\d+)?)\s*[:\/x]\s*(\d+(?:[.,]\d+)?)\s*$/);
+  if(!m)throw"Rácio inválido. Exemplos: 16:9, 4:3, 1:1.";const a=+m[1].replace(',','.'),b=+m[2].replace(',','.');
+  if(a<=0||b<=0)throw"O rácio tem de ter valores positivos.";return[a,b]}
+function racDraw(){
+  $('racErr').textContent='';$('racTab').replaceChildren();
+  document.querySelectorAll('#racChips .chip').forEach(c=>c.classList.toggle('on',c.textContent===$('rac').value.trim()));
+  try{
+    const[rl,ra]=parseRac($('rac').value),v=+$('val').value;
+    if(!(v>0))throw"Indica um valor maior que zero.";
+    const l=$('lado').value==='l'?v:v*rl/ra,a=$('lado').value==='a'?v:v*ra/rl;
+    $('racRes').textContent=`${+l.toFixed(1)} × ${+a.toFixed(1)} px`;
+    $('racNote').textContent=Number.isInteger(+l.toFixed(6))&&Number.isInteger(+a.toFixed(6))?'Valores inteiros.':`Arredondado: ${Math.round(l)} × ${Math.round(a)} px`;
+    box($('racStage'),rl,ra,$('rac').value.trim());
+    [640,1280,1920,2560,3840,7680].forEach(w=>{const h=w*ra/rl,tr=el('tr');
+      tr.append(el('td',w),el('td',(Number.isInteger(+h.toFixed(6))?h:h.toFixed(1)+'*')),el('td',cat(w,Math.round(h))));$('racTab').append(tr)});
+  }catch(e){$('racErr').textContent=e;$('racRes').textContent='';$('racNote').textContent='';$('racStage').replaceChildren()}
+}
+Object.keys(STD).forEach(r=>$('racChips').append(el('button',r,'chip',()=>{$('rac').value=r;racDraw()})));
+["rac","lado","val"].forEach(i=>$(i).oninput=racDraw);
+
+/* ---------- Cores ---------- */
+function normHex(t){let s=t.trim().replace(/^#/,'');if(/^[0-9a-f]{3}$/i.test(s))s=[...s].map(c=>c+c).join('');
+  if(!/^[0-9a-f]{6}$/i.test(s))throw"Cor inválida. Usa por exemplo #0A873A.";return'#'+s.toUpperCase()}
+const rgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+function toHsl([r,g,b]){r/=255;g/=255;b/=255;const M=Math.max(r,g,b),m=Math.min(r,g,b),l=(M+m)/2;let h=0,s=0;
+  if(M!==m){const d=M-m;s=l>.5?d/(2-M-m):d/(M+m);h=M===r?(g-b)/d+(g<b?6:0):M===g?(b-r)/d+2:(r-g)/d+4;h/=6}return[h,s,l]}
+function fromHsl(h,s,l){h=((h%1)+1)%1;s=Math.min(1,Math.max(0,s));l=Math.min(1,Math.max(0,l));
+  const f=n=>{const k=(n+h*12)%12,a=s*Math.min(l,1-l);return l-a*Math.max(-1,Math.min(k-3,9-k,1))};
+  return'#'+[f(0),f(8),f(4)].map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join('').toUpperCase()}
+const lin=c=>(c/=255)<=.03928?c/12.92:((c+.055)/1.055)**2.4;
+const lum=h=>{const[r,g,b]=rgb(h);return .2126*lin(r)+.7152*lin(g)+.0722*lin(b)};
+const contr=(a,b)=>{const[x,y]=[lum(a),lum(b)].sort((p,q)=>q-p);return(x+.05)/(y+.05)};
+const wcag=c=>c>=7?'AAA':c>=4.5?'AA':c>=3?'AA (texto grande)':'Insuficiente';
+const ink=h=>contr(h,'#000000')>=contr(h,'#FFFFFF')?'#000000':'#FFFFFF';
+const ESQ={"Complementar":[0,180],"Análoga":[-30,0,30],"Tríade":[0,120,240],"Tétrade":[0,90,180,270],"Complementar dividida":[0,150,210]};
+function paletas(base){const[h,s,l]=toHsl(rgb(base)),p={};
+  for(const[n,gs]of Object.entries(ESQ))p[n]=gs.map(g=>fromHsl(h+g/360,s,l));
+  p["Monocromática"]=[.2,.35,.5,.65,.8].map(x=>fromHsl(h,s,x));return p}
+let base='#0A873A';
+async function copy(t){try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement('textarea');a.value=t;document.body.append(a);a.select();try{document.execCommand('copy')}catch(_){}a.remove()}
+  $('msg').textContent='Copiado: '+t}
+function corDraw(v){
+  $('hexErr').textContent='';
+  try{base=normHex(v??$('hex').value)}catch(e){$('hexErr').textContent=e;return}
+  if(v!=null||document.activeElement!==$('hex'))$('hex').value=base;
+  $('cor').value=base.toLowerCase();
+  const[r,g,b]=rgb(base),[h,s,l]=toHsl([r,g,b]),cb=contr(base,'#FFFFFF'),cp=contr(base,'#000000'),d=$('corInfo');d.replaceChildren();
+  d.append(el('dt','RGB'),el('dd',`${r}, ${g}, ${b}`),el('dt','HSL'),el('dd',`${Math.round(h*360)}°, ${Math.round(s*100)}%, ${Math.round(l*100)}%`),
+    el('dt','Contraste'),el('dd',`branco ${cb.toFixed(2)} (${wcag(cb)}) · preto ${cp.toFixed(2)} (${wcag(cp)})`));
+  const host=$('paletas');host.replaceChildren();
+  for(const[n,cs]of Object.entries(paletas(base))){
+    host.append(el('h2',n));const row=el('div',null,'sw');
+    cs.forEach(c=>{const bt=el('button',c,null,()=>copy(c));bt.style.background=c;bt.style.color=ink(c);bt.title='Clica para copiar · duplo clique para usar como base';
+      bt.ondblclick=()=>corDraw(c);row.append(bt)});host.append(row)}
+}
+$('hex').oninput=()=>{const t=$('hex').value.replace('#','');if(t.length===3||t.length===6)corDraw()};
+$('cor').oninput=e=>corDraw(e.target.value);
+$('cpJson').onclick=()=>copy(JSON.stringify({base,paletas:paletas(base)},null,2));
+
+/* ---------- Separadores ---------- */
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  ['t1','t2','t3'].forEach(t=>$(t).hidden=t!==b.dataset.t)});
+resDraw();racDraw();corDraw();
+</script>
+</body>
+</html>
