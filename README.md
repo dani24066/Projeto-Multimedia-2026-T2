@@ -54,11 +54,15 @@ Mistral, etc., regista:
 
 4. Estrutura de Ficheiros do Repositório
 Listagem simples dos ficheiros presentes na pasta:
-- index.html – página principal do Dashboard / Web App
-- app.py - Ficheiro principal da aplicação.
-- style.css (Se necessário) - Folha de estilos para o layout Web
+- Ferramentas de ecrã e cor.html – Codigo html da App de ferramentas de ecrã e cor.
+- Multimádia-Lab  Dashboard.html - Código html do Dashboard
+- Nuvem de palavras.html - Código html da App de Nuvem de palavras
+- Nuvem de palavras.py- Código de python da App da nuvem de palavras.
 - README.md - Este relatório de projeto.
--  Assets - Imagens, nuvens de palavras geradas, recursos utilizados, etc.
+- Sudoku.html - Código html do jogo de sudoku
+- Sudoku.py - Código python do jogo de sudoku
+- ferramentas_ecra.py - Codigo py da App de ferramentas de ecrã e cor.
+
 
 5. Reflexão Crítica e Aprendizagem
 
